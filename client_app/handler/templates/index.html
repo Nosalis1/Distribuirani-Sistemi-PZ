@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block scripts %}
+    <script>
+        function displayContent(cardName) {
+            console.log('Clicked on ' + cardName)
+            window.location.href = cardName;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const cards = document.getElementsByClassName('content-card');
+            for (let i = 0; i < cards.length; i++) {
+                const cardName = cards[i].querySelector('h2').textContent;
+                cards[i].addEventListener('click', function () {
+                    displayContent(cardName);
+                });
+            }
+
+            const inputField = document.getElementById('input-field');
+            const searchButton = document.getElementById('search-button');
+            searchButton.addEventListener('click', function () {
+                const fileName = inputField.value;
+                fetch(`/search/${fileName}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Handle the response data
+                        console.log(data);
+                        location.reload();
+                        // Do something with the data, such as updating the UI
+                    })
+                    .catch(error => {
+                        // Handle errors
+                        console.error('Error:', error);
+                    });
+                console.log(inputField.value);
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="files-page">
+        <div class="content-list">
+            <h1>Contents</h1>
+            <div class="search-files">
+                <label>
+                    Search:
+                    <input id="input-field" type="text">
+                </label>
+                <button id="search-button">Find</button>
+            </div>
+            {% if data %}
+                {% for element in data %}
+                    <div class="content-card">
+                        <h2>{{ element.file_name }}</h2>
+                        <p>Size: {{ element.file_size }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        {% if file %}
+            <div class="file-content">
+                {{ file }}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
